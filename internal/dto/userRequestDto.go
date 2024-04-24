@@ -10,3 +10,9 @@ type UserSignup struct {
 	FirstName string `json:"firstName,omitempty" validate:"required"`
 	LastName  string `json:"lastName,omitempty" validate:"required"`
 }
+
+type ProfileInfo struct {
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+	Username  string `json:"userName"`
+}
