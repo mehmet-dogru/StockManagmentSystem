@@ -7,6 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
 	"time"
 )
@@ -14,8 +15,8 @@ import (
 type UserRepository interface {
 	CreateUser(user domain.User) (domain.User, error)
 	FindUser(username string) (domain.User, error)
-	FindUserByID(id uint) (domain.User, error)
-	UpdateUser(id uint, u domain.User) error
+	FindUserByID(id primitive.ObjectID) (domain.User, error)
+	UpdateUser(id primitive.ObjectID, u domain.User) error
 }
 
 type userRepository struct {
@@ -23,9 +24,27 @@ type userRepository struct {
 }
 
 func NewUserRepository(db *mongo.Database) UserRepository {
-	return &userRepository{
+	userRepository := &userRepository{
 		collection: db.Collection("users"),
 	}
+
+	err := userRepository.ensureUniqueIndex()
+	if err != nil {
+		log.Printf("error creating unique index: %v", err)
+	}
+
+	return userRepository
+}
+
+func (r *userRepository) ensureUniqueIndex() error {
+	_, err := r.collection.Indexes().CreateOne(
+		context.Background(),
+		mongo.IndexModel{
+			Keys:    bson.D{{Key: "username", Value: 1}},
+			Options: options.Index().SetUnique(true),
+		},
+	)
+	return err
 }
 
 func (r *userRepository) CreateUser(user domain.User) (domain.User, error) {
@@ -59,9 +78,9 @@ func (r *userRepository) FindUser(username string) (domain.User, error) {
 	return user, nil
 }
 
-func (r *userRepository) FindUserByID(id uint) (domain.User, error) {
+func (r *userRepository) FindUserByID(id primitive.ObjectID) (domain.User, error) {
 	var user domain.User
-	filter := bson.M{"id": id}
+	filter := bson.M{"_id": id}
 
 	err := r.collection.FindOne(context.Background(), filter).Decode(&user)
 	if err != nil {
@@ -75,8 +94,8 @@ func (r *userRepository) FindUserByID(id uint) (domain.User, error) {
 	return user, nil
 }
 
-func (r *userRepository) UpdateUser(id uint, u domain.User) error {
-	filter := bson.M{"id": id}
+func (r *userRepository) UpdateUser(id primitive.ObjectID, u domain.User) error {
+	filter := bson.M{"_id": id}
 	update := bson.M{"$set": u}
 
 	_, err := r.collection.UpdateOne(context.Background(), filter, update)

@@ -7,6 +7,7 @@ import (
 	"DynamicStockManagmentSystem/internal/helper"
 	"DynamicStockManagmentSystem/internal/repository"
 	"errors"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type UserService struct {
@@ -26,6 +27,13 @@ func NewUserService(repo repository.UserRepository, auth helper.Auth, config con
 func (s UserService) Signup(input dto.UserSignup) (string, error) {
 	hPassword, err := s.Auth.CreateHashedPassword(input.Password)
 	if err != nil {
+		return "", err
+	}
+
+	_, err = s.findUserByUsername(input.Username)
+	if err == nil {
+		return "", errors.New("user already exists with the provided username")
+	} else if err != nil && err.Error() != "user does not exist" {
 		return "", err
 	}
 
@@ -56,4 +64,19 @@ func (s UserService) Login(username string, password string) (string, error) {
 	}
 
 	return s.Auth.GenerateToken(user.ID.Hex(), user.Username, user.FirstName, user.LastName)
+}
+
+func (s UserService) GetProfile(id primitive.ObjectID) (dto.ProfileInfo, error) {
+	user, err := s.Repo.FindUserByID(id)
+	if err != nil {
+		return dto.ProfileInfo{}, errors.New("user does not exist")
+	}
+
+	profileInfo := dto.ProfileInfo{
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		Username:  user.Username,
+	}
+
+	return profileInfo, nil
 }

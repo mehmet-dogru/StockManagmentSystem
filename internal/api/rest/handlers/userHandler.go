@@ -33,6 +33,11 @@ func SetupUserRoutes(rh *rest.RestHandler) {
 	//Public Endpoints
 	pubRoutes.Post("/register", handler.Register)
 	pubRoutes.Post("/login", handler.Login)
+
+	//Protected Endpoints
+	pvtRoutes := pubRoutes.Group("/", rh.Auth.Authorize)
+
+	pvtRoutes.Get("/account", handler.GetAccount)
 }
 
 func (h *UserHandler) Register(ctx *fiber.Ctx) error {
@@ -73,4 +78,14 @@ func (h *UserHandler) Login(ctx *fiber.Ctx) error {
 	}
 
 	return responses.NewSuccessResponse(ctx, http.StatusOK, token)
+}
+
+func (h *UserHandler) GetAccount(ctx *fiber.Ctx) error {
+	currentUser := h.svc.Auth.GetCurrentUser(ctx)
+	accountInfo, err := h.svc.GetProfile(currentUser.ID)
+	if err != nil {
+		responses.NewErrorResponse(ctx, http.StatusInternalServerError, err.Error())
+	}
+
+	return responses.NewSuccessResponse(ctx, http.StatusOK, accountInfo)
 }
