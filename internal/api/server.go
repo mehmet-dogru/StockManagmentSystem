@@ -33,4 +33,5 @@ func StartServer(config config.AppConfig) {
 
 func setupRoutes(rh *rest.RestHandler) {
 	handlers.SetupUserRoutes(rh)
+	handlers.SetupFormRoutes(rh)
 }
