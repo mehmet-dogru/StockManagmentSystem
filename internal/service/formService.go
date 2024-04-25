@@ -6,6 +6,7 @@ import (
 	"DynamicStockManagmentSystem/internal/dto"
 	"DynamicStockManagmentSystem/internal/helper"
 	"DynamicStockManagmentSystem/internal/repository"
+	"errors"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -67,9 +68,13 @@ func (s FormService) UpdateForm(formID primitive.ObjectID, userID primitive.Obje
 }
 
 func (s FormService) DeleteForm(formID primitive.ObjectID, userID primitive.ObjectID) (string, error) {
-	err := s.Repo.DeleteForm(formID, userID)
+	deleteResult, err := s.Repo.DeleteForm(formID, userID)
 	if err != nil {
 		return "", err
+	}
+
+	if deleteResult == 0 {
+		return "", errors.New("form does not exist")
 	}
 
 	return "form deleted successfully", nil

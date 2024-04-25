@@ -4,6 +4,7 @@ import (
 	"DynamicStockManagmentSystem/internal/domain"
 	"context"
 	"errors"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"log"
@@ -15,7 +16,7 @@ type FormRepository interface {
 	GetForms(userID primitive.ObjectID) ([]domain.Form, error)
 	GetFormByID(formID primitive.ObjectID, userID primitive.ObjectID) (domain.Form, error)
 	UpdateForm(formID primitive.ObjectID, form domain.Form, userID primitive.ObjectID) error
-	DeleteForm(formID primitive.ObjectID, userID primitive.ObjectID) error
+	DeleteForm(formID primitive.ObjectID, userID primitive.ObjectID) (int64, error)
 }
 
 type formRepository struct {
@@ -87,7 +88,10 @@ func (f formRepository) UpdateForm(formID primitive.ObjectID, form domain.Form, 
 	defer cancel()
 
 	filter := primitive.M{"_id": formID, "user_id": userID}
-	update := primitive.M{"$set": form}
+	update := primitive.M{"$set": bson.M{
+		"title":       form.Title,
+		"description": form.Description,
+	}}
 
 	_, err := f.collection.UpdateOne(ctx, filter, update)
 	if err != nil {
@@ -98,15 +102,17 @@ func (f formRepository) UpdateForm(formID primitive.ObjectID, form domain.Form, 
 	return nil
 }
 
-func (f formRepository) DeleteForm(formID primitive.ObjectID, userID primitive.ObjectID) error {
+func (f formRepository) DeleteForm(formID primitive.ObjectID, userID primitive.ObjectID) (int64, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	_, err := f.collection.DeleteOne(ctx, primitive.M{"_id": formID, "user_id": userID})
+	filter := primitive.M{"_id": formID, "user_id": userID}
+
+	deleteResult, err := f.collection.DeleteOne(ctx, filter)
 	if err != nil {
 		log.Printf("delete form error %v", err)
-		return errors.New("failed to delete form")
+		return 0, errors.New("failed to delete form")
 	}
 
-	return nil
+	return deleteResult.DeletedCount, nil
 }
