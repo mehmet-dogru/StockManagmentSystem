@@ -25,7 +25,15 @@ func NewFormService(repo repository.FormRepository, auth helper.Auth, config con
 }
 
 func (s FormService) CreateForm(userID primitive.ObjectID, input dto.CreateFormInput) (string, error) {
-	_, err := s.Repo.CreateForm(domain.Form{
+	existingForm, err := s.Repo.GetFormByTitle(input.Title, userID)
+	if err != nil {
+		return "", err
+	}
+	if existingForm.ID != primitive.NilObjectID {
+		return "", errors.New("a form with the same title already exists")
+	}
+
+	_, err = s.Repo.CreateForm(domain.Form{
 		UserID:      userID,
 		Title:       input.Title,
 		Description: input.Description,

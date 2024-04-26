@@ -7,6 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
 	"time"
 )
@@ -17,6 +18,7 @@ type FormRepository interface {
 	GetFormByID(formID primitive.ObjectID, userID primitive.ObjectID) (domain.Form, error)
 	UpdateForm(formID primitive.ObjectID, form domain.Form, userID primitive.ObjectID) error
 	DeleteForm(formID primitive.ObjectID, userID primitive.ObjectID) (int64, error)
+	GetFormByTitle(title string, userID primitive.ObjectID) (domain.Form, error)
 }
 
 type formRepository struct {
@@ -24,9 +26,28 @@ type formRepository struct {
 }
 
 func NewFormRepository(db *mongo.Database) FormRepository {
-	return &formRepository{
+	formRepository := &formRepository{
 		collection: db.Collection("forms"),
 	}
+
+	err := formRepository.ensureUniqueIndex()
+	if err != nil {
+		log.Printf("error creating unique index: %v", err)
+	}
+
+	return formRepository
+}
+
+func (f formRepository) ensureUniqueIndex() error {
+	_, err := f.collection.Indexes().CreateOne(
+		context.Background(),
+		mongo.IndexModel{
+			Keys:    bson.M{"title": 1},
+			Options: options.Index().SetUnique(true),
+		},
+	)
+
+	return err
 }
 
 func (f formRepository) CreateForm(form domain.Form) (domain.Form, error) {
@@ -115,4 +136,21 @@ func (f formRepository) DeleteForm(formID primitive.ObjectID, userID primitive.O
 	}
 
 	return deleteResult.DeletedCount, nil
+}
+
+func (f formRepository) GetFormByTitle(title string, userID primitive.ObjectID) (domain.Form, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	var form domain.Form
+	err := f.collection.FindOne(ctx, bson.M{"title": title, "userId": userID}).Decode(&form)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return domain.Form{}, nil
+		}
+		log.Printf("get form by title error: %v", err)
+		return domain.Form{}, errors.New("failed to get form by title")
+	}
+
+	return form, nil
 }
