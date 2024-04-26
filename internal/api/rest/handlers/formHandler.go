@@ -13,20 +13,25 @@ import (
 )
 
 type FormHandler struct {
-	svc       service.FormService
-	validator validator.Validate
+	formService  service.FormService
+	stockService service.StockService
+	validator    validator.Validate
 }
 
 func SetupFormRoutes(rh *rest.RestHandler) {
 	app := rh.App
 	versionRoutes := app.Group("/api/v1")
 
-	repo := repository.NewFormRepository(rh.DB)
-	svc := service.NewFormService(repo, rh.Auth, rh.Config)
+	formRepository := repository.NewFormRepository(rh.DB)
+	formService := service.NewFormService(formRepository, rh.Auth, rh.Config)
+
+	stockRepository := repository.NewStockRepository(rh.DB)
+	stockService := service.NewStockService(stockRepository, rh.Auth, rh.Config)
 
 	handler := &FormHandler{
-		svc:       svc,
-		validator: rh.Validator,
+		formService:  formService,
+		stockService: stockService,
+		validator:    rh.Validator,
 	}
 
 	pvtRoutes := versionRoutes.Group("/forms", rh.Auth.Authorize)
@@ -36,6 +41,12 @@ func SetupFormRoutes(rh *rest.RestHandler) {
 	pvtRoutes.Get("/:id", handler.GetForm)
 	pvtRoutes.Put("/:id", handler.UpdateForm)
 	pvtRoutes.Delete("/:id", handler.DeleteForm)
+
+	pvtRoutes.Post("/:id/stocks", handler.CreateStock)
+	pvtRoutes.Get("/:id/stocks", handler.GetStockList)
+	pvtRoutes.Get("/:id/stocks/:stock_id", handler.GetStock)
+	pvtRoutes.Put("/:id/stocks/:stock_id", handler.UpdateStock)
+	pvtRoutes.Delete("/:id/stocks/:stock_id", handler.DeleteStock)
 }
 
 func (h *FormHandler) CreateForm(ctx *fiber.Ctx) error {
@@ -50,8 +61,8 @@ func (h *FormHandler) CreateForm(ctx *fiber.Ctx) error {
 		return responses.NewErrorResponse(ctx, http.StatusBadRequest, err.Error())
 	}
 
-	currentUser := h.svc.Auth.GetCurrentUser(ctx)
-	res, err := h.svc.CreateForm(currentUser.ID, form)
+	currentUser := h.formService.Auth.GetCurrentUser(ctx)
+	res, err := h.formService.CreateForm(currentUser.ID, form)
 	if err != nil {
 		return responses.NewErrorResponse(ctx, http.StatusInternalServerError, err.Error())
 	}
@@ -60,8 +71,8 @@ func (h *FormHandler) CreateForm(ctx *fiber.Ctx) error {
 }
 
 func (h *FormHandler) GetFormList(ctx *fiber.Ctx) error {
-	currentUser := h.svc.Auth.GetCurrentUser(ctx)
-	forms, err := h.svc.FindForms(currentUser.ID)
+	currentUser := h.formService.Auth.GetCurrentUser(ctx)
+	forms, err := h.formService.FindForms(currentUser.ID)
 	if err != nil {
 		return responses.NewErrorResponse(ctx, http.StatusInternalServerError, err.Error())
 	}
@@ -72,9 +83,9 @@ func (h *FormHandler) GetFormList(ctx *fiber.Ctx) error {
 func (h *FormHandler) GetForm(ctx *fiber.Ctx) error {
 	formID := ctx.Params("id")
 	formObjectID, _ := primitive.ObjectIDFromHex(formID)
-	currentUser := h.svc.Auth.GetCurrentUser(ctx)
+	currentUser := h.formService.Auth.GetCurrentUser(ctx)
 
-	form, err := h.svc.FindFormByID(formObjectID, currentUser.ID)
+	form, err := h.formService.FindFormByID(formObjectID, currentUser.ID)
 	if err != nil {
 		return responses.NewErrorResponse(ctx, http.StatusInternalServerError, err.Error())
 	}
@@ -97,8 +108,8 @@ func (h *FormHandler) UpdateForm(ctx *fiber.Ctx) error {
 		return responses.NewErrorResponse(ctx, http.StatusBadRequest, err.Error())
 	}
 
-	currentUser := h.svc.Auth.GetCurrentUser(ctx)
-	res, err := h.svc.UpdateForm(formObjectID, currentUser.ID, form)
+	currentUser := h.formService.Auth.GetCurrentUser(ctx)
+	res, err := h.formService.UpdateForm(formObjectID, currentUser.ID, form)
 	if err != nil {
 		return responses.NewErrorResponse(ctx, http.StatusInternalServerError, err.Error())
 	}
@@ -110,8 +121,99 @@ func (h *FormHandler) DeleteForm(ctx *fiber.Ctx) error {
 	formID := ctx.Params("id")
 	formObjectID, _ := primitive.ObjectIDFromHex(formID)
 
-	currentUser := h.svc.Auth.GetCurrentUser(ctx)
-	res, err := h.svc.DeleteForm(formObjectID, currentUser.ID)
+	currentUser := h.formService.Auth.GetCurrentUser(ctx)
+	res, err := h.formService.DeleteForm(formObjectID, currentUser.ID)
+	if err != nil {
+		return responses.NewErrorResponse(ctx, http.StatusInternalServerError, err.Error())
+	}
+
+	return responses.NewSuccessResponse(ctx, http.StatusOK, res)
+}
+
+func (h *FormHandler) CreateStock(ctx *fiber.Ctx) error {
+	stock := dto.AddStockRequestDto{}
+
+	formID := ctx.Params("id")
+	formObjectID, _ := primitive.ObjectIDFromHex(formID)
+
+	err := ctx.BodyParser(&stock)
+	if err != nil {
+		return responses.NewErrorResponse(ctx, http.StatusBadRequest, "please provide valid inputs")
+	}
+
+	if err := h.validator.Struct(stock); err != nil {
+		return responses.NewErrorResponse(ctx, http.StatusBadRequest, err.Error())
+	}
+
+	res, err := h.stockService.CreateStock(formObjectID, stock)
+	if err != nil {
+		return responses.NewErrorResponse(ctx, http.StatusInternalServerError, err.Error())
+	}
+
+	return responses.NewSuccessResponse(ctx, http.StatusOK, res)
+}
+
+func (h *FormHandler) GetStockList(ctx *fiber.Ctx) error {
+	formID := ctx.Params("id")
+	formObjectID, _ := primitive.ObjectIDFromHex(formID)
+
+	res, err := h.stockService.FindStocks(formObjectID)
+	if err != nil {
+		return responses.NewErrorResponse(ctx, http.StatusInternalServerError, err.Error())
+	}
+
+	return responses.NewSuccessResponse(ctx, http.StatusOK, res)
+}
+
+func (h *FormHandler) GetStock(ctx *fiber.Ctx) error {
+	stockID := ctx.Params("stock_id")
+	stockObjectID, _ := primitive.ObjectIDFromHex(stockID)
+
+	formID := ctx.Params("id")
+	formObjectID, _ := primitive.ObjectIDFromHex(formID)
+
+	res, err := h.stockService.FindStockByID(stockObjectID, formObjectID)
+	if err != nil {
+		return responses.NewErrorResponse(ctx, http.StatusInternalServerError, err.Error())
+	}
+
+	return responses.NewSuccessResponse(ctx, http.StatusOK, res)
+}
+
+func (h *FormHandler) UpdateStock(ctx *fiber.Ctx) error {
+	stockID := ctx.Params("stock_id")
+	stockObjectID, _ := primitive.ObjectIDFromHex(stockID)
+
+	formID := ctx.Params("id")
+	formObjectID, _ := primitive.ObjectIDFromHex(formID)
+
+	stock := dto.UpdateStockRequestDto{}
+
+	err := ctx.BodyParser(&stock)
+	if err != nil {
+		return responses.NewErrorResponse(ctx, http.StatusBadRequest, "please provide valid inputs")
+	}
+
+	if err := h.validator.Struct(stock); err != nil {
+		return responses.NewErrorResponse(ctx, http.StatusBadRequest, err.Error())
+	}
+
+	res, err := h.stockService.UpdateStock(stockObjectID, formObjectID, stock)
+	if err != nil {
+		return responses.NewErrorResponse(ctx, http.StatusInternalServerError, err.Error())
+	}
+
+	return responses.NewSuccessResponse(ctx, http.StatusOK, res)
+}
+
+func (h *FormHandler) DeleteStock(ctx *fiber.Ctx) error {
+	stockID := ctx.Params("stock_id")
+	stockObjectID, _ := primitive.ObjectIDFromHex(stockID)
+
+	formID := ctx.Params("id")
+	formObjectID, _ := primitive.ObjectIDFromHex(formID)
+
+	res, err := h.stockService.DeleteStock(stockObjectID, formObjectID)
 	if err != nil {
 		return responses.NewErrorResponse(ctx, http.StatusInternalServerError, err.Error())
 	}
