@@ -32,24 +32,7 @@ func NewFormRepository(db *mongo.Database) FormRepository {
 		collection: db.Collection("forms"),
 	}
 
-	err := formRepository.ensureUniqueIndex()
-	if err != nil {
-		log.Printf("error creating unique index: %v", err)
-	}
-
 	return formRepository
-}
-
-func (f formRepository) ensureUniqueIndex() error {
-	_, err := f.collection.Indexes().CreateOne(
-		context.Background(),
-		mongo.IndexModel{
-			Keys:    bson.M{"title": 1},
-			Options: options.Index().SetUnique(true),
-		},
-	)
-
-	return err
 }
 
 func (f formRepository) CreateForm(form domain.Form) (domain.Form, error) {
