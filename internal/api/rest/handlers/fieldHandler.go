@@ -34,8 +34,8 @@ func SetupFieldRoutes(rh *rest.RestHandler) {
 	pvtRoutes.Post("/field", handler.CreateField)
 	pvtRoutes.Get("/field", handler.GetFieldList)
 	pvtRoutes.Get("/field/:field_id", handler.GetField)
-	pvtRoutes.Put("/field/:id", handler.UpdateField)
-	pvtRoutes.Delete("/field/:id", handler.DeleteField)
+	pvtRoutes.Put("/field/:field_id", handler.UpdateField)
+	pvtRoutes.Delete("/field/:field_id", handler.DeleteField)
 }
 
 func (h *FieldHandler) CreateField(ctx *fiber.Ctx) error {
@@ -89,7 +89,7 @@ func (h *FieldHandler) GetField(ctx *fiber.Ctx) error {
 }
 
 func (h *FieldHandler) UpdateField(ctx *fiber.Ctx) error {
-	fieldID := ctx.Params("id")
+	fieldID := ctx.Params("field_id")
 	fieldObjectID, _ := primitive.ObjectIDFromHex(fieldID)
 
 	formID := ctx.Params("id")
@@ -115,7 +115,7 @@ func (h *FieldHandler) UpdateField(ctx *fiber.Ctx) error {
 }
 
 func (h *FieldHandler) DeleteField(ctx *fiber.Ctx) error {
-	fieldID := ctx.Params("id")
+	fieldID := ctx.Params("field_id")
 	fieldObjectID, _ := primitive.ObjectIDFromHex(fieldID)
 
 	formID := ctx.Params("id")
