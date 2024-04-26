@@ -55,7 +55,7 @@ func (s UserService) findUserByUsername(username string) (*domain.User, error) {
 func (s UserService) Login(username string, password string) (string, error) {
 	user, err := s.findUserByUsername(username)
 	if err != nil {
-		return "", errors.New("user does not exist with the provided email id")
+		return "", errors.New("user does not exist with the provided username")
 	}
 
 	err = s.Auth.VerifyPassword(password, user.Password)
