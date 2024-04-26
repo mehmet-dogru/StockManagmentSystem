@@ -25,7 +25,42 @@ func NewFieldService(repo repository.FieldRepository, auth helper.Auth, config c
 }
 
 func (f FieldService) CreateField(formID primitive.ObjectID, input dto.CreateFieldInput) (string, error) {
-	_, err := f.Repo.CreateField(domain.Field{
+	var err error
+	var fieldType string
+
+	switch input.Type {
+	case "Combobox":
+		fieldType = "Combobox"
+	case "Text":
+		fieldType = "Text"
+	case "Checkbox":
+		fieldType = "Checkbox"
+	case "Number", "NumberDecimal":
+		fieldType = "Number"
+	default:
+		return "", errors.New("invalid field type")
+	}
+
+	switch fieldType {
+	case "Combobox":
+		if len(input.Options) == 0 || len(input.Options) > 10 {
+			return "", errors.New("invalid options for Combobox field")
+		}
+	case "Text":
+		if input.MinChars < 0 || input.MaxChars < 0 || input.MinChars > input.MaxChars {
+			return "", errors.New("invalid min-max characters for Text field")
+		}
+	case "Number":
+		if input.MinValue < 0 || input.MaxValue < 0 || input.MinValue > input.MaxValue {
+			return "", errors.New("invalid min-max values for Number field")
+		}
+	default:
+		if input.MinValue < 0 || input.MaxValue < 0 || input.MinValue > input.MaxValue {
+			return "", errors.New("invalid min-max values for NumberDecimal field")
+		}
+	}
+
+	_, err = f.Repo.CreateField(domain.Field{
 		FormID:     formID,
 		Type:       input.Type,
 		Name:       input.Name,
@@ -35,8 +70,8 @@ func (f FieldService) CreateField(formID primitive.ObjectID, input dto.CreateFie
 		MinValue:   input.MinValue,
 		MaxValue:   input.MaxValue,
 		IsRequired: input.IsRequired,
-		IsUnique:   input.IsUnique,
-		IsHidden:   input.IsHidden,
+		IsUnique:   *input.IsUnique,
+		IsHidden:   *input.IsHidden,
 		Order:      input.Order,
 	})
 	if err != nil {
