@@ -5,7 +5,7 @@ type AddStockRequestDto struct {
 	Quantity    int     `json:"quantity" validate:"required"`
 	Price       float64 `json:"price" validate:"required"`
 	Currency    string  `json:"currency" validate:"required"`
-	IsAvailable bool    `json:"isAvailable" validate:"required"`
+	IsAvailable *bool   `json:"isAvailable"`
 }
 
 type UpdateStockRequestDto struct {
@@ -13,5 +13,5 @@ type UpdateStockRequestDto struct {
 	Quantity    int     `json:"quantity" validate:"required"`
 	Price       float64 `json:"price" validate:"required"`
 	Currency    string  `json:"currency" validate:"required"`
-	IsAvailable bool    `json:"isAvailable" validate:"required"`
+	IsAvailable *bool   `json:"isAvailable"`
 }

@@ -30,7 +30,7 @@ func (s StockService) CreateStock(formID primitive.ObjectID, input dto.AddStockR
 		Quantity:    input.Quantity,
 		Price:       input.Price,
 		Currency:    input.Currency,
-		IsAvailable: input.IsAvailable,
+		IsAvailable: *input.IsAvailable,
 	})
 	if err != nil {
 		return "", err
@@ -63,7 +63,7 @@ func (s StockService) UpdateStock(stockID primitive.ObjectID, formID primitive.O
 		Quantity:    input.Quantity,
 		Price:       input.Price,
 		Currency:    input.Currency,
-		IsAvailable: input.IsAvailable,
+		IsAvailable: *input.IsAvailable,
 	}, formID)
 	if err != nil {
 		return "", err
