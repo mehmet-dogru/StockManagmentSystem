@@ -1,0 +1,536 @@
+{
+	"info": {
+		"_postman_id": "c786b0c8-6700-4e28-9f85-0bc75e87c9c2",
+		"name": "Dynamic Stock Managment System",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "34397666",
+		"_collection_link": "https://bebek-yolda.postman.co/workspace/Team-Workspace~e40ea868-7fe4-4e15-8899-49277c14045e/collection/34397666-c786b0c8-6700-4e28-9f85-0bc75e87c9c2?action=share&source=collection_link&creator=34397666"
+	},
+	"item": [
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Register",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"mehmetodogru\",\r\n    \"firstName\": \"Mehmet\",\r\n    \"lastName\": \"Doğru\",\r\n    \"password\": \"123123\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/users/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\",()=> {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"pm.test(\"Access Token Test\", ()=> {\r",
+									"    const response = pm.response.json();\r",
+									"    let accessToken = response.data;\r",
+									"    pm.globals.set(\"accessToken\", accessToken);\r",
+									"    pm.expect(pm.globals.get(\"accessToken\")).eql(response.data);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"zeynepakbas\",\r\n    \"password\": \"123123\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/users/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Account",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/users/account",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"account"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Forms",
+			"item": [
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\": \"Form title\",\r\n    \"description\": \"Form description\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/forms",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"forms"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Forms",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/forms",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"forms"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Form By Id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/forms/662a9a0f859785d1b5ae41a1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"forms",
+								"662a9a0f859785d1b5ae41a1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Form",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\": \"Update title\",\r\n    \"description\": \"Update description\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/forms/662a9a0f859785d1b5ae41a1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"forms",
+								"662a9a0f859785d1b5ae41a1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Form",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/forms/662a1a809f6f32dfa339a2b5",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"forms",
+								"662a1a809f6f32dfa339a2b5"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Fields",
+			"item": [
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"string\",\n  \"type\": \"Text\",\n  \"options\": [\"string\",\"string\",\"string\",\"string\",\"string\",\"string\",\"string\",\"string\"],\n  \"minChars\": 1,\n  \"maxChars\": 10,\n  \"minValue\": 5,\n  \"maxValue\": 50,\n  \"isRequired\": false,\n  \"isUnique\": false,\n  \"isHidden\": false,\n  \"order\": 1\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/forms/662a9a0f859785d1b5ae41a1/field",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"forms",
+								"662a9a0f859785d1b5ae41a1",
+								"field"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Fields",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/forms/662a9a0f859785d1b5ae41a1/field",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"forms",
+								"662a9a0f859785d1b5ae41a1",
+								"field"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Field By ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/forms/662a9a0f859785d1b5ae41a1/field/662a9a2b859785d1b5ae41a2",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"forms",
+								"662a9a0f859785d1b5ae41a1",
+								"field",
+								"662a9a2b859785d1b5ae41a2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Field",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"update string\",\n  \"type\": \"update type\",\n  \"options\": [\"string1\", \"string2\", \"string3\"],\n  \"minChars\": 1,\n  \"maxChars\": 10,\n  \"minValue\": 5,\n  \"maxValue\": 105,\n  \"isRequired\": true,\n  \"isUnique\": false,\n  \"isHidden\": true,\n  \"order\": 1\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/forms/662a9a0f859785d1b5ae41a1/field/662a9a2b859785d1b5ae41a2",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"forms",
+								"662a9a0f859785d1b5ae41a1",
+								"field",
+								"662a9a2b859785d1b5ae41a2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Field",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/forms/662a9a0f859785d1b5ae41a1/field/662a9a2b859785d1b5ae41a2",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"forms",
+								"662a9a0f859785d1b5ae41a1",
+								"field",
+								"662a9a2b859785d1b5ae41a2"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Stocks",
+			"item": [
+				{
+					"name": "Add Stock",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"productName\": \"Tişört\",\n    \"quantity\": 5,\n    \"price\": 149.90,\n    \"currency\": \"TRY\",\n    \"isAvailable\" : true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/forms/662a9a0f859785d1b5ae41a1/stocks",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"forms",
+								"662a9a0f859785d1b5ae41a1",
+								"stocks"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Stock List",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/forms/662a9a0f859785d1b5ae41a1/stocks",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"forms",
+								"662a9a0f859785d1b5ae41a1",
+								"stocks"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Stock",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/forms/662a9a0f859785d1b5ae41a1/stocks/662b6f66dc9edb58ef9001ea",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"forms",
+								"662a9a0f859785d1b5ae41a1",
+								"stocks",
+								"662b6f66dc9edb58ef9001ea"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Stock",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"productName\": \"Tişört\",\n    \"quantity\": 10,\n    \"price\": 159.90,\n    \"currency\": \"TRY\",\n    \"isAvailable\" : false\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/forms/662a9a0f859785d1b5ae41a1/stocks/662b6f66dc9edb58ef9001ea",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"forms",
+								"662a9a0f859785d1b5ae41a1",
+								"stocks",
+								"662b6f66dc9edb58ef9001ea"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Stock",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/forms/662a9a0f859785d1b5ae41a1/stocks/662b6f66dc9edb58ef9001ea",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"forms",
+								"662a9a0f859785d1b5ae41a1",
+								"stocks",
+								"662b6f66dc9edb58ef9001ea"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{accessToken}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:9000",
+			"type": "string"
+		}
+	]
+}
