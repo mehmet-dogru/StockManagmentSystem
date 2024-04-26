@@ -48,7 +48,7 @@ func (f formRepository) GetForms(userID primitive.ObjectID) ([]domain.Form, erro
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	cursor, err := f.collection.Find(ctx, primitive.M{"user_id": userID})
+	cursor, err := f.collection.Find(ctx, primitive.M{"userId": userID})
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return []domain.Form{}, errors.New("form does not exist")
@@ -71,7 +71,7 @@ func (f formRepository) GetFormByID(formID primitive.ObjectID, userID primitive.
 	defer cancel()
 
 	var form domain.Form
-	err := f.collection.FindOne(ctx, primitive.M{"_id": formID, "user_id": userID}).Decode(&form)
+	err := f.collection.FindOne(ctx, primitive.M{"_id": formID, "userId": userID}).Decode(&form)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return domain.Form{}, errors.New("form does not exist")
@@ -87,7 +87,7 @@ func (f formRepository) UpdateForm(formID primitive.ObjectID, form domain.Form, 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	filter := primitive.M{"_id": formID, "user_id": userID}
+	filter := primitive.M{"_id": formID, "userId": userID}
 	update := primitive.M{"$set": bson.M{
 		"title":       form.Title,
 		"description": form.Description,
@@ -106,7 +106,7 @@ func (f formRepository) DeleteForm(formID primitive.ObjectID, userID primitive.O
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	filter := primitive.M{"_id": formID, "user_id": userID}
+	filter := primitive.M{"_id": formID, "userId": userID}
 
 	deleteResult, err := f.collection.DeleteOne(ctx, filter)
 	if err != nil {

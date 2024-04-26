@@ -47,7 +47,7 @@ func (f fieldRepository) GetFields(formID primitive.ObjectID) ([]domain.Field, e
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	cursor, err := f.collection.Find(ctx, primitive.M{"form_id": formID})
+	cursor, err := f.collection.Find(ctx, primitive.M{"formId": formID})
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return []domain.Field{}, errors.New("field does not exist")
@@ -76,7 +76,7 @@ func (f fieldRepository) GetFieldByID(fieldID primitive.ObjectID, formID primiti
 	defer cancel()
 
 	var field domain.Field
-	err := f.collection.FindOne(ctx, primitive.M{"_id": fieldID, "form_id": formID}).Decode(&field)
+	err := f.collection.FindOne(ctx, primitive.M{"_id": fieldID, "formId": formID}).Decode(&field)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return domain.Field{}, errors.New("field does not exist")
@@ -94,21 +94,21 @@ func (f fieldRepository) UpdateField(fieldID primitive.ObjectID, field domain.Fi
 
 	update := primitive.M{
 		"$set": primitive.M{
-			"name":        field.Name,
-			"type":        field.Type,
-			"options":     field.Options,
-			"min_chars":   field.MinChars,
-			"max_chars":   field.MaxChars,
-			"min_value":   field.MinValue,
-			"max_value":   field.MaxValue,
-			"is_required": field.IsRequired,
-			"is_unique":   field.IsUnique,
-			"is_hidden":   field.IsHidden,
-			"order":       field.Order,
+			"name":       field.Name,
+			"type":       field.Type,
+			"options":    field.Options,
+			"minChars":   field.MinChars,
+			"maxChars":   field.MaxChars,
+			"minValue":   field.MinValue,
+			"maxValue":   field.MaxValue,
+			"isRequired": field.IsRequired,
+			"isUnique":   field.IsUnique,
+			"isHidden":   field.IsHidden,
+			"order":      field.Order,
 		},
 	}
 
-	_, err := f.collection.UpdateOne(ctx, primitive.M{"_id": fieldID, "form_id": formID}, update)
+	_, err := f.collection.UpdateOne(ctx, primitive.M{"_id": fieldID, "formId": formID}, update)
 	if err != nil {
 		log.Printf("update field error %v", err)
 		return errors.New("failed to update field")
@@ -121,7 +121,7 @@ func (f fieldRepository) DeleteField(fieldID primitive.ObjectID, formID primitiv
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	res, err := f.collection.DeleteOne(ctx, primitive.M{"_id": fieldID, "form_id": formID})
+	res, err := f.collection.DeleteOne(ctx, primitive.M{"_id": fieldID, "formId": formID})
 	if err != nil {
 		log.Printf("delete field error %v", err)
 		return 0, errors.New("failed to delete field")
