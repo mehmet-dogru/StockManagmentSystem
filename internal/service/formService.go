@@ -87,3 +87,21 @@ func (s FormService) DeleteForm(formID primitive.ObjectID, userID primitive.Obje
 
 	return "form deleted successfully", nil
 }
+
+func (s FormService) CountForms(userID primitive.ObjectID) (int64, error) {
+	count, err := s.Repo.CountForms(userID)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
+func (s FormService) FindFormsPaginated(userID primitive.ObjectID, offset, limit int) ([]domain.Form, error) {
+	forms, err := s.Repo.FindFormsPaginated(userID, offset, limit)
+	if err != nil {
+		return nil, err
+	}
+
+	return forms, nil
+}

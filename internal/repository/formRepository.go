@@ -19,6 +19,8 @@ type FormRepository interface {
 	UpdateForm(formID primitive.ObjectID, form domain.Form, userID primitive.ObjectID) error
 	DeleteForm(formID primitive.ObjectID, userID primitive.ObjectID) (int64, error)
 	GetFormByTitle(title string, userID primitive.ObjectID) (domain.Form, error)
+	CountForms(userID primitive.ObjectID) (int64, error)
+	FindFormsPaginated(userID primitive.ObjectID, offset, limit int) ([]domain.Form, error)
 }
 
 type formRepository struct {
@@ -153,4 +155,34 @@ func (f formRepository) GetFormByTitle(title string, userID primitive.ObjectID) 
 	}
 
 	return form, nil
+}
+
+func (f *formRepository) CountForms(userID primitive.ObjectID) (int64, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	count, err := f.collection.CountDocuments(ctx, bson.M{"userId": userID})
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
+func (f *formRepository) FindFormsPaginated(userID primitive.ObjectID, offset, limit int) ([]domain.Form, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	cursor, err := f.collection.Find(ctx, bson.M{"userId": userID}, options.Find().SetSkip(int64(offset)).SetLimit(int64(limit)))
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var forms []domain.Form
+	if err := cursor.All(ctx, &forms); err != nil {
+		return nil, err
+	}
+
+	return forms, nil
 }

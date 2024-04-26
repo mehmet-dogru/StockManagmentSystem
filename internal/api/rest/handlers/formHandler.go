@@ -9,7 +9,9 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"math"
 	"net/http"
+	"strconv"
 )
 
 type FormHandler struct {
@@ -71,13 +73,36 @@ func (h *FormHandler) CreateForm(ctx *fiber.Ctx) error {
 }
 
 func (h *FormHandler) GetFormList(ctx *fiber.Ctx) error {
+	page, err := strconv.Atoi(ctx.Query("page", "1"))
+	if err != nil || page < 1 {
+		page = 1
+	}
+	pageSize, err := strconv.Atoi(ctx.Query("pageSize", "10"))
+	if err != nil || pageSize < 1 {
+		pageSize = 10
+	}
+
 	currentUser := h.formService.Auth.GetCurrentUser(ctx)
-	forms, err := h.formService.FindForms(currentUser.ID)
+	totalForms, err := h.formService.CountForms(currentUser.ID)
 	if err != nil {
 		return responses.NewErrorResponse(ctx, http.StatusInternalServerError, err.Error())
 	}
 
-	return responses.NewSuccessResponse(ctx, http.StatusOK, forms)
+	offset := (page - 1) * pageSize
+	forms, err := h.formService.FindFormsPaginated(currentUser.ID, offset, pageSize)
+	if err != nil {
+		return responses.NewErrorResponse(ctx, http.StatusInternalServerError, err.Error())
+	}
+
+	responseData := map[string]interface{}{
+		"forms":        forms,
+		"currentPage":  page,
+		"totalPages":   int(math.Ceil(float64(totalForms) / float64(pageSize))),
+		"totalForms":   totalForms,
+		"formsPerPage": pageSize,
+	}
+
+	return responses.NewSuccessResponse(ctx, http.StatusOK, responseData)
 }
 
 func (h *FormHandler) GetForm(ctx *fiber.Ctx) error {
